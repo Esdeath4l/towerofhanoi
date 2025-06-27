@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Tower of Hanoi Visualizer</title>
+  <style>
+    body {
+      background: #1e1e2f;
+      color: white;
+      font-family: 'Segoe UI', sans-serif;
+      text-align: center;
+      padding: 20px;
+    }
+
+    input, button {
+      padding: 10px 16px;
+      margin: 10px;
+      font-size: 16px;
+      border-radius: 5px;
+      border: none;
+    }
+
+    input {
+      width: 60px;
+    }
+
+    button {
+      background-color: #00bcd4;
+      color: white;
+      cursor: pointer;
+    }
+
+    .rods {
+      display: flex;
+      justify-content: center;
+      gap: 80px;
+      margin-top: 50px;
+      height: 300px;
+      align-items: flex-end;
+    }
+
+    .rod {
+      width: 10px;
+      height: 250px;
+      background: #ccc;
+      position: relative;
+    }
+
+    .disk {
+      position: absolute;
+      height: 20px;
+      background: pink;
+      border-radius: 4px;
+      text-align: center;
+      line-height: 20px;
+      color: black;
+      font-weight: bold;
+    }
+  </style>
+</head>
+<body>
+
+  <h1>🎮 Tower of Hanoi Visualizer</h1>
+  <p>Enter number of disks (2–6):</p>
+
+  <input type="number" id="diskCount" min="2" max="6" value="3">
+  <button onclick="startHanoi()">Start</button>
+
+  <div class="rods">
+    <div id="A" class="rod"></div>
+    <div id="B" class="rod"></div>
+    <div id="C" class="rod"></div>
+  </div>
+
+  <script>
+    const rodA = document.getElementById("A");
+    const rodB = document.getElementById("B");
+    const rodC = document.getElementById("C");
+
+    let rods = { A: [], B: [], C: [] };
+    const delay = ms => new Promise(res => setTimeout(res, ms));
+
+    function createDisks(n) {
+      for (let i = n; i >= 1; i--) {
+        const disk = document.createElement("div");
+        disk.className = "disk";
+        disk.style.width = `${40 + i * 20}px`;
+        disk.style.left = `${-10 - i * 10}px`;
+        disk.innerText = i;
+        rods.A.push(disk);
+        rodA.appendChild(disk);
+        updateHeights();
+      }
+    }
+
+    function updateHeights() {
+      for (let rod in rods) {
+        rods[rod].forEach((disk, index) => {
+          disk.style.bottom = `${index * 22}px`;
+        });
+      }
+    }
+
+    async function move(n, from, to, aux) {
+      if (n === 1) {
+        await moveDisk(from, to);
+        return;
+      }
+      await move(n - 1, from, aux, to);
+      await moveDisk(from, to);
+      await move(n - 1, aux, to, from);
+    }
+
+    async function moveDisk(from, to) {
+      await delay(500);
+      const disk = rods[from].pop();
+      rods[to].push(disk);
+      document.getElementById(to).appendChild(disk);
+      updateHeights();
+    }
+
+    async function startHanoi() {
+      const n = parseInt(document.getElementById("diskCount").value);
+      if (isNaN(n) || n < 2 || n > 6) {
+        alert("Please enter a number between 2 and 6.");
+        return;
+      }
+
+      // Clear previous state
+      rods = { A: [], B: [], C: [] };
+      rodA.innerHTML = '';
+      rodB.innerHTML = '';
+      rodC.innerHTML = '';
+
+      createDisks(n);
+      await delay(500);
+      await move(n, "A", "C", "B");
+    }
+  </script>
+
+</body>
+</html>
